@@ -51,11 +51,29 @@ jobs:
             android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: ignore
 
+      - name: Name the APK for download
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk tidyroll-test.apk
+
+      - name: Publish the latest build as a download (every push to main)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          target_commitish: ${{ github.sha }}
+          name: Tidyroll - latest build
+          body: |
+            Latest Android build of Tidyroll, made automatically from the main branch.
+            Download **tidyroll-test.apk** below and open it on an Android 10+ phone. Allow installing from your browser or file manager when Android asks.
+            Built from commit ${{ github.sha }}.
+          files: tidyroll-test.apk
+          overwrite_files: true
+          make_latest: true
+
       - name: Attach the APK to the GitHub release (tags like v1.0.0)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
             android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/apk/debug/app-debug.apk
+            tidyroll-test.apk
           fail_on_unmatched_files: false
