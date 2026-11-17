@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Engine test</title></head>
+<body>
+<input id="dir" type="file" webkitdirectory multiple>
+<pre id="log"></pre>
+<script type="module">
+import { Analyzer } from '../web/js/engine/analyzer.js';
+import { Geo } from '../web/js/engine/geo.js';
+import { initLabels, labelName } from '../web/js/engine/labels.js';
+import { placeItem, tagItem } from '../web/js/engine/organize.js';
+import { buildPlan } from '../web/js/engine/planner.js';
+import { search } from '../web/js/engine/search.js';
+
+const log = (s) => { document.getElementById('log').textContent += s + '\n'; };
+window.__ready = true;
+document.getElementById('dir').addEventListener('change', async (ev) => {
+  const t0 = performance.now();
+  const files = [...ev.target.files];
+  const an = new Analyzer({ workers: +(new URLSearchParams(location.search).get('workers') || 0) || undefined });
+  const [labels, geo] = await Promise.all([an.init(log), new Geo().load()]);
+  initLabels(labels);
+  const tInit = performance.now();
+  const entries = files.map((f, i) => ({ id: 'f' + i, name: f.name, path: f.webkitRelativePath || f.name, size: f.size, mtime: f.lastModified, getFile: async () => f }));
+  const items = await an.run(entries, { onItem: (it) => { placeItem(it, geo); tagItem(it); } });
+  const tRun = performance.now();
+  const plan = buildPlan(items, { custom: ['dog', 'coffee', 'Italy 2026', 'beach', 'unicorn'] });
+  const tPlan = performance.now();
+  window.__result = {
+    timing: { init: Math.round(tInit - t0), run: Math.round(tRun - tInit), plan: Math.round(tPlan - tRun), workers: an.size, n: items.length },
+    items: items.map((it) => ({ name: it.name, path: it.path, kind: it.kind, source: it.source, app: it.app, t: it.t && new Date(it.t).toISOString().slice(0, 19), tsrc: it.tsrc,
+      utc: it.utc && new Date(it.utc).toISOString().slice(0, 19), lat: it.lat && +it.lat.toFixed(3), lon: it.lon && +it.lon.toFixed(3), country: it.country, town: it.town,
+      dur: it.dur, via: it.via, ms: it.ms, top: (it.top || []).slice(0, 3).map(([i, p]) => labelName(i) + ' ' + p), faces: it.nfaces, cats: it.cats, main: it.main,
+      lum: it.lum, warm: it.warm, sat: it.sat, sky: it.sky, green: it.green, blur: it.blur, edges: it.edges, white: it.white, dhash: it.dhash, thumb: !!it.thumb })),
+    plan: { home: plan.home, totals: plan.totals, groups: plan.groups.map((g) => ({ name: g.name, albums: g.albums.map((a) => ({ name: a.name, n: a.ids.length, empty: a.empty, unknown: a.unknown, ids: a.ids.map((id) => items.find((x) => x.id === id)?.name) })) })) },
+    search: ['dog', 'cat', 'Switzerland', 'goa', 'calangute 2025', 'screenshots', 'night', 'whatsapp 2026', 'boat'].map((q) => ({ q, ...search(q, items), ids: search(q, items).ids.length })),
+  };
+  log('done');
+});
+</script>
+</body>
+</html>

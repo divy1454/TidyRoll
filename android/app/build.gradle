@@ -1,0 +1,56 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    // Change both of these to your own reverse-domain name before publishing (they cannot change later).
+    namespace 'app.tidyroll.sorter'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'app.tidyroll.sorter'
+        minSdk 29          // Android 10: scoped storage and the media location permission
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        release {
+            // Set these as environment variables (or GitHub secrets) to build a signed release.
+            def ks = System.getenv('TIDYROLL_KEYSTORE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('TIDYROLL_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('TIDYROLL_KEY_ALIAS')
+                keyPassword System.getenv('TIDYROLL_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('TIDYROLL_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    androidResources {
+        // The model, runtime and fonts are read directly; compressing them only slows start-up.
+        noCompress += ['wasm', 'onnx', 'woff2', 'tsv']
+    }
+}
+
+// The app shows the same web app that runs in the browser: copy ../web into the APK's assets.
+def syncWebApp = tasks.register('syncWebApp', Sync) {
+    from(rootProject.file('../web')) {
+        exclude 'sw.js', 'manifest.webmanifest'
+    }
+    into(layout.projectDirectory.dir('src/main/assets/www'))
+}
+tasks.named('preBuild') { dependsOn(syncWebApp) }

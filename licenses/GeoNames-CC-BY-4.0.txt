@@ -1,0 +1,4 @@
+Town names, coordinates and time zones in web/data/cities.tsv come from GeoNames (https://www.geonames.org/),
+file cities5000.txt, licensed under the Creative Commons Attribution 4.0 International License
+(https://creativecommons.org/licenses/by/4.0/). Changes: reduced to name, coordinates, country,
+population and time zone, and re-encoded.

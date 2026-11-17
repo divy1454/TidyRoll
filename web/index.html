@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tidyroll - sort your camera roll into albums</title>
+<meta name="description" content="Sort your phone's photos into albums for trips, places, people, pets, food and more. Runs on your own device; nothing is uploaded or deleted.">
+<meta name="theme-color" content="#231815">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/display-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/text-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <a class="brand" href="./" aria-label="Tidyroll, start over"><span class="lamp" aria-hidden="true"></span>Tidyroll</a>
+  <p class="bar-note" id="bar-note">Runs on this device. Nothing is uploaded.</p>
+</header>
+
+<main id="main">
+  <!-- 1. Start -->
+  <section id="view-start" class="view" aria-labelledby="start-title">
+    <div class="start-copy">
+      <h1 id="start-title" class="display">Tidy your camera roll into albums.</h1>
+      <p class="lede">Tidyroll looks at every photo and video in a folder and files copies into albums: trips, places, people, pets, food, screenshots and more. It all happens on this device, and your originals are never moved, changed or deleted.</p>
+      <div class="actions">
+        <button class="btn primary" id="pick-folder" type="button">Choose a photo folder</button>
+        <label class="btn primary" id="pick-files-label" hidden>Choose photos<input id="pick-files" type="file" accept="image/*,video/*" multiple hidden></label>
+        <label class="btn" id="pick-dir-input-label" hidden>Choose a folder<input id="pick-dir-input" type="file" webkitdirectory multiple hidden></label>
+        <button class="btn primary" id="pick-gallery" type="button" hidden>Open my gallery</button>
+      </div>
+      <p class="hint" id="drop-hint">You can also drop a folder anywhere on this page.</p>
+      <p class="notice" id="mobile-note" hidden>Phone browsers hide where photos were taken, so trips and places need the Tidyroll app for Android. Everything else works here.</p>
+      <details class="howto" id="howto-pc">
+        <summary>How do I get my phone's photos onto this PC?</summary>
+        <ol>
+          <li>Connect your phone with a USB cable and unlock it. If it asks, choose <strong>File transfer</strong>.</li>
+          <li>In File Explorer, open the phone, then <strong>Internal storage</strong>, then <strong>DCIM</strong>.</li>
+          <li>Copy the <strong>Camera</strong> and <strong>Screenshots</strong> folders into your Pictures folder.</li>
+          <li>Come back here and choose that folder. Photos synced with OneDrive or Google Photos downloads work too.</li>
+        </ol>
+      </details>
+    </div>
+    <div class="tray" id="hero-tray" aria-hidden="true"></div>
+  </section>
+
+  <!-- 2. Choices -->
+  <section id="view-brief" class="view" aria-labelledby="brief-title" hidden>
+    <h2 id="brief-title" class="display-2">Found photos</h2>
+    <p class="lede" id="brief-sub"></p>
+    <form id="brief" class="brief" novalidate>
+      <fieldset>
+        <legend>Albums to make</legend>
+        <div class="chips" id="groups"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Photos to include</legend>
+        <div class="segmented" role="radiogroup" id="range">
+          <label><input type="radio" name="range" value="all" checked><span>All of them</span></label>
+          <label><input type="radio" name="range" value="12m"><span>Last 12 months</span></label>
+          <label><input type="radio" name="range" value="year"><span>This year</span></label>
+          <label><input type="radio" name="range" value="custom"><span>Pick dates</span></label>
+        </div>
+        <div class="dates" id="dates" hidden>
+          <label>From <input type="date" id="date-from"></label>
+          <label>To <input type="date" id="date-to"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Leave out</legend>
+        <div class="checks">
+          <label><input type="checkbox" name="out" value="screenshots"> Screenshots</label>
+          <label><input type="checkbox" name="out" value="whatsapp"> WhatsApp images</label>
+          <label><input type="checkbox" name="out" value="social"> Saved from other apps</label>
+          <label><input type="checkbox" name="out" value="docs"> Documents and notes</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend><label for="custom">Anything special? Each one becomes its own album.</label></legend>
+        <input id="custom" class="field" type="text" placeholder="dog, coffee, sunsets, Italy 2025" autocomplete="off">
+      </fieldset>
+      <fieldset>
+        <legend><label for="root-name">Save albums into a folder called</label></legend>
+        <input id="root-name" class="field short" type="text" value="Sorted Albums" autocomplete="off">
+      </fieldset>
+      <div class="actions">
+        <button class="btn primary" type="submit" id="start">Start sorting</button>
+        <button class="btn quiet" type="button" id="back-start">Choose a different folder</button>
+      </div>
+      <p class="hint" id="brief-time"></p>
+    </form>
+  </section>
+
+  <!-- 3. Developing -->
+  <section id="view-develop" class="view" aria-labelledby="dev-title" hidden>
+    <div class="dev-head">
+      <h2 id="dev-title" class="display-2">Developing your roll</h2>
+      <p class="dev-status" id="dev-status" role="status" aria-live="polite">Getting ready</p>
+      <div class="meter" role="progressbar" aria-labelledby="dev-title" id="dev-meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <button class="btn quiet" type="button" id="stop">Stop sorting</button>
+    </div>
+    <div class="dev-body">
+      <div class="tray live" id="dev-tray" aria-hidden="true"></div>
+      <aside class="envelopes" aria-labelledby="env-title">
+        <h3 id="env-title">Filling albums</h3>
+        <ol id="env-list"></ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 4. Contact sheet -->
+  <section id="view-sheet" class="view" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-head">
+      <div>
+        <h2 id="sheet-title" class="display-2">Your albums</h2>
+        <p class="lede" id="sheet-sub"></p>
+      </div>
+      <div class="sheet-actions">
+        <button class="btn primary" type="button" id="save">Save albums to a folder</button>
+        <button class="btn quiet" type="button" id="change">Change choices</button>
+      </div>
+    </div>
+    <p class="notice" id="sheet-note" hidden></p>
+    <form class="find" id="find" role="search">
+      <label for="q" class="vh">Find photos</label>
+      <input id="q" class="field" type="search" placeholder="Find photos, like dog or Italy 2025" autocomplete="off">
+    </form>
+    <div id="groups-out"></div>
+  </section>
+
+  <!-- 5. Saving and done -->
+  <section id="view-saving" class="view" aria-labelledby="saving-title" hidden>
+    <h2 id="saving-title" class="display-2">Saving your albums</h2>
+    <p class="dev-status" id="saving-status" role="status" aria-live="polite"></p>
+    <div class="meter" role="progressbar" aria-labelledby="saving-title" id="saving-meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+  </section>
+
+  <section id="view-done" class="view" aria-labelledby="done-title" hidden>
+    <h2 id="done-title" class="display">Albums saved.</h2>
+    <p class="lede" id="done-sub"></p>
+    <div class="actions">
+      <button class="btn danger" type="button" id="undo">Undo saving</button>
+      <button class="btn" type="button" id="again">Sort another folder</button>
+      <button class="btn quiet" type="button" id="back-sheet">Back to the albums</button>
+    </div>
+  </section>
+</main>
+
+<dialog id="album" aria-labelledby="album-name">
+  <form method="dialog" class="album-head">
+    <label class="vh" for="album-name">Album name</label>
+    <input id="album-name" class="album-title" type="text" autocomplete="off">
+    <button class="btn quiet" value="close" autofocus>Close</button>
+  </form>
+  <p class="hint" id="album-sub"></p>
+  <div class="album-grid" id="album-grid"></div>
+  <div class="album-foot">
+    <button class="btn" type="button" id="album-zip" hidden>Download as ZIP</button>
+    <button class="btn" type="button" id="album-keep" hidden>Make this an album</button>
+    <button class="btn danger" type="button" id="album-remove">Remove album</button>
+  </div>
+</dialog>
+
+<div class="drop" id="drop" hidden><p>Drop the folder to sort it</p></div>
+<div class="toast" id="toast" role="alert" hidden></div>
+
+<footer class="foot">
+  <p>Tidyroll sorts on your device using open models (MobileNetV2 and YuNet) and open map data (Natural Earth, GeoNames). <a href="licenses.html">Licences</a></p>
+</footer>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

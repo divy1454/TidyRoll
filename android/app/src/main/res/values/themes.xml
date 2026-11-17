@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="darkroom">#231815</color>
+    <style name="Theme.Tidyroll" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/darkroom</item>
+        <item name="android:colorBackground">@color/darkroom</item>
+        <item name="android:statusBarColor">@color/darkroom</item>
+        <item name="android:navigationBarColor">@color/darkroom</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
